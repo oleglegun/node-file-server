@@ -19,36 +19,38 @@ const FILES_DIR = __dirname + '/files'
 const PUBLIC_DIR = __dirname + '/public'
 
 new Server((req, res) => {
-    const reqURL = url.parse(req.url)
-    const reqPath = decodeURI(reqURL.pathname)
+    const reqPathname = decodeURI(url.parse(req.url).pathname)
 
-    if (!isValidFilePath(reqPath)) {
-        res.writeHead = 400
-        res.end('Bad request')
+    if (!isValidFilePath(reqPathname)) {
+        // invalid path
+        res.statusCode = 400
+        res.end('Bad request.')
         return
     }
 
+    const filePath = FILES_DIR + reqPathname
+
     switch (req.method) {
         case 'GET':
-            if (reqPath == '/') {
-                res.setHeader('Content-Type', 'text/html;charset=utf-8')
-                sendFile(`${PUBLIC_DIR}/index.html`, res)
-            } else if (isValidFilePath(reqPath)) {
-                sendFile(FILES_DIR + reqPath, res)
-            } else {
-                // Invalid path
-                res.statusCode = 400
-                // res.writeHead(400, "Bad Request");
-                res.end('Bad request')
+            if (reqPathname === '/') {
+                // index page
+                sendFile(
+                    PUBLIC_DIR + '/index.html',
+                    res,
+                    'text/html:charset=utf-8'
+                )
+                return
             }
 
+            // send file requested file
+            sendFile(filePath, res, mime.getType(filePath))
             break
 
         case 'POST':
 
         case 'DELETE':
-            if (isValidFilePath(reqPath)) {
-                if (deleteFile(FILES_DIR + reqPath)) {
+            if (isValidFilePath(reqPathname)) {
+                if (deleteFile(filePath)) {
                     res.statusCode = 200
                 } else {
                     res.writeHead(404, 'Not Found')
