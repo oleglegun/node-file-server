@@ -17,6 +17,7 @@ const { isValidFilePath } = require('./helpers')
 
 const FILES_DIR = __dirname + '/files'
 const PUBLIC_DIR = __dirname + '/public'
+const MAX_UPLOAD_FILE_SIZE = 10e6
 
 new Server((req, res) => {
     const reqPathname = decodeURI(url.parse(req.url).pathname)
@@ -30,34 +31,28 @@ new Server((req, res) => {
 
     const filePath = FILES_DIR + reqPathname
 
+    console.log('<CLIENT_REQUEST>\t', req.method, reqPathname)
+
     switch (req.method) {
         case 'GET':
             if (reqPathname === '/') {
                 // index page
-                sendFile(
-                    PUBLIC_DIR + '/index.html',
-                    res,
-                    'text/html:charset=utf-8'
-                )
+                sendFile(PUBLIC_DIR + '/index.html', res, 'text/html:charset=utf-8')
                 return
             }
 
             // send file requested file
             sendFile(filePath, res, mime.getType(filePath))
+
             break
 
         case 'POST':
+            saveFile(filePath, req, res, MAX_UPLOAD_FILE_SIZE)
+
+            break
 
         case 'DELETE':
-            if (isValidFilePath(reqPathname)) {
-                if (deleteFile(filePath)) {
-                    res.statusCode = 200
-                } else {
-                    res.writeHead(404, 'Not Found')
-                }
-
-                res.end()
-            }
+            deleteFile(filePath, res)
             break
 
         default:
