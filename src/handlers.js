@@ -1,6 +1,6 @@
 const fs = require('fs')
 
-// sendFile opens file on `path` and pipes it to the response `res`.
+// sendFile opens the file on `path` and pipes it to the response `res`.
 function sendFile(path, res, mimeType) {
     const fileStream = fs.createReadStream(path)
 
@@ -21,7 +21,7 @@ function sendFile(path, res, mimeType) {
         .pipe(res)
 }
 
-// deleteFile unlinks file on `path` and writes the result to the response `res`.
+// deleteFile unlinks the file on `path` and writes the result to the response `res`.
 function deleteFile(path, res) {
     fs.unlink(path, err => {
         if (err) {
@@ -45,7 +45,7 @@ function deleteFile(path, res) {
     })
 }
 
-// saveFile creates file on `path`, pipes request body to the file and when
+// saveFile creates the file on `path`, pipes request body to the file and when
 // finished, writes the result to the response `res`.
 function saveFile(path, req, res, fileSizeLimit) {
     // flag wx - fails if file already exist
@@ -60,9 +60,15 @@ function saveFile(path, req, res, fileSizeLimit) {
                 res.end('File already exists.')
                 console.log('<FILE_OPEN_ERROR>\t', path, 'already exists')
             } else {
-                res.statusCode = 500
-                res.end('Server error.')
                 console.log(err)
+                if (res.headersSent) {
+                    res.writeHead(500, { Connection: 'close' })
+                    res.write('Server error.')
+                }
+
+                fs.unlink(path, err => {
+                    res.end()
+                })
             }
         })
         .on('close', () => {
@@ -90,8 +96,13 @@ function saveFile(path, req, res, fileSizeLimit) {
 
             if (uploadedBytes > fileSizeLimit) {
                 res.statusCode = 413
+
+                // Close keep-alive connection, otherwise the browser continues sending data
+                // https://stackoverflow.com/questions/18367824/how-to-cancel-http-upload-from-data-events
+                res.setHeader('Connection', 'close')
+
                 // if we .end res => req will end too, i.e. the same connection
-                res.end('Uploaded file size exceeds the limit')
+                res.end('Uploaded file size exceeds the limit.')
 
                 // Destroy stream
                 file.destroy()
