@@ -1,5 +1,6 @@
 const fs = require('fs')
 
+// sendFile opens file on `path` and pipes it to the response `res`.
 function sendFile(path, res, mimeType) {
     const fileStream = fs.createReadStream(path)
 
@@ -20,6 +21,7 @@ function sendFile(path, res, mimeType) {
         .pipe(res)
 }
 
+// deleteFile unlinks file on `path` and writes the result to the response `res`.
 function deleteFile(path, res) {
     fs.unlink(path, err => {
         if (err) {
@@ -43,8 +45,9 @@ function deleteFile(path, res) {
     })
 }
 
+// saveFile creates file on `path`, pipes request body to the file and when
+// finished, writes the result to the response `res`.
 function saveFile(path, req, res, fileSizeLimit) {
-    // Create new file and write to it
     // flag wx - fails if file already exist
     const file = fs.createWriteStream(path, { flags: 'wx' })
 

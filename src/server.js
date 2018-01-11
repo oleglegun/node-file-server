@@ -15,6 +15,7 @@ const mime = require('mime')
 const { saveFile, sendFile, deleteFile } = require('./handlers')
 const { isValidFilePath } = require('./helpers')
 
+const PORT = 3000
 const FILES_DIR = __dirname + '/files'
 const PUBLIC_DIR = __dirname + '/public'
 const MAX_UPLOAD_FILE_SIZE = 10e6
@@ -43,12 +44,10 @@ new Server((req, res) => {
 
             // send file requested file
             sendFile(filePath, res, mime.getType(filePath))
-
             break
 
         case 'POST':
             saveFile(filePath, req, res, MAX_UPLOAD_FILE_SIZE)
-
             break
 
         case 'DELETE':
@@ -59,4 +58,4 @@ new Server((req, res) => {
             res.writeHead(400, 'Bad Request', { 'Content-Type': 'text/plain' })
             res.end('Bad Request.')
     }
-}).listen(3000)
+}).listen(PORT)
