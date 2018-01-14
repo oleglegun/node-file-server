@@ -1,21 +1,21 @@
 {
-  "name": "file-server",
-  "version": "1.0.0",
-  "description": "",
-  "main": "src/server.js",
-  "scripts": {
-    "test": "mocha -w",
-    "start": "nodemon src/entry.js"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "config": "^1.29.2",
-    "is-invalid-path": "^0.1.0",
-    "mime": "^2.2.0",
-    "request": "^2.83.0"
-  },
-  "devDependencies": {
-    "mocha": "^4.1.0"
-  }
+    "name": "file-server",
+    "version": "1.0.0",
+    "description": "",
+    "main": "src/server.js",
+    "scripts": {
+        "test": "NODE_ENV=TEST mocha -w",
+        "start": "nodemon src/entry.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "config": "^1.29.2",
+        "is-invalid-path": "^0.1.0",
+        "mime": "^2.2.0",
+        "request": "^2.83.0"
+    },
+    "devDependencies": {
+        "mocha": "^4.1.0"
+    }
 }

@@ -16,10 +16,10 @@ const config = require('config')
 const { saveFile, sendFile, deleteFile } = require('./handlers')
 const { isValidFilePath } = require('./helpers')
 
-const PORT = config.get('Port')
-const FILES_DIR = __dirname + config.get('FilesDir')
-const PUBLIC_DIR = __dirname + config.get('PublicDir')
-const MAX_UPLOAD_FILE_SIZE = config.get('MaxUploadFileSize')
+const PORT = config.get('port')
+const FILES_DIR = config.get('filesDir')
+const PUBLIC_DIR = config.get('publicDir')
+const MAX_UPLOAD_FILE_SIZE = config.get('maxUploadFileSize')
 
 const server = new Server((req, res) => {
     const reqPathname = decodeURI(url.parse(req.url).pathname)

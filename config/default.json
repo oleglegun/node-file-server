@@ -1,7 +1,0 @@
-{
-    "PortTest": 7777,
-    "Port": 3000,
-    "FilesDir": "/files",
-    "PublicDir": "/public",
-    "MaxUploadFileSize": 10e6
-}
