@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "config": "^1.29.2",
     "is-invalid-path": "^0.1.0",
     "mime": "^2.2.0"
   }

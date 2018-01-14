@@ -12,13 +12,14 @@ const { Server } = require('http')
 const url = require('url')
 const fs = require('fs')
 const mime = require('mime')
+const config = require('config')
 const { saveFile, sendFile, deleteFile } = require('./handlers')
 const { isValidFilePath } = require('./helpers')
 
-const PORT = 3000
-const FILES_DIR = __dirname + '/files'
-const PUBLIC_DIR = __dirname + '/public'
-const MAX_UPLOAD_FILE_SIZE = 10e6
+const PORT = config.get("Port")
+const FILES_DIR = __dirname + config.get("FilesDir")
+const PUBLIC_DIR = __dirname + config.get("PublicDir")
+const MAX_UPLOAD_FILE_SIZE = config.get("MaxUploadFileSize")
 
 new Server((req, res) => {
     const reqPathname = decodeURI(url.parse(req.url).pathname)

@@ -112,7 +112,7 @@ function saveFile(path, req, res, fileSizeLimit) {
                     if (err) {
                         console.error(err)
                     } else {
-                        console.log('<FILE_DELETE_SUCCESS>', path)
+                        console.log('<FILE_DELETE_SUCCESS>\t', path)
                     }
                 })
             }
