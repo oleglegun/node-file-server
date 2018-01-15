@@ -15,6 +15,7 @@
         "config": "^1.29.2",
         "is-invalid-path": "^0.1.0",
         "mime": "^2.2.0",
+        "node-fetch": "^1.7.3",
         "request": "^2.83.0",
         "winston": "^3.0.0-rc1"
     },

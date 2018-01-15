@@ -41,6 +41,7 @@ const testLogger = winston.createLogger({
     format: combine(splat(), printf(info => `[${info.level}] ${info.message}`)),
     transports: [testFile],
     exceptionHandlers: [testFile],
+    exitOnError: false,
 })
 
 if (process.env.NODE_ENV !== 'production') {
