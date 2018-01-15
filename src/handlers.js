@@ -1,23 +1,24 @@
 const fs = require('fs')
+const log = require('./logger')
 
 // sendFile opens the file on `path` and pipes it to the response `res`.
 function sendFile(path, res, mimeType) {
     const fileStream = fs.createReadStream(path)
 
     fileStream
-        .on('open', () => console.log('<FILE_OPEN_SUCCESS>\t', path))
+        .on('open', () => log.info('File opened: %s', path))
         .on('error', err => {
             if (err.code === 'ENOENT') {
-                console.log('<FILE_NOT_FOUND>\t', path)
+                log.warn('File not found: %s', path)
                 res.statusCode = 404
                 res.end('File not found.')
             } else {
-                console.log('<FILE_READ_ERROR>\t', path)
+                log.error('File read error: %s', path)
                 res.statusCode = 500
                 res.end('Server error.')
             }
         })
-        .on('close', () => console.log('<FILE_CLOSE_SUCCESS>\t', path))
+        .on('close', () => log.info('File closed: %s', path))
         .pipe(res)
 }
 
@@ -31,15 +32,14 @@ function deleteFile(path, res) {
                     res.end('File not found.')
                     break
                 default:
-                    console.log('<FILE_DELETE_ERROR>', path)
-                    console.error(err)
+                    log.info('File delete error: %s', err.message)
                     res.statusCode = 500
                     res.end('Server Error.')
             }
             return
         }
 
-        console.log('<FILE_DELETE_SUCCESS>\t', path)
+        log.info('File deleted: %s', path)
         res.statusCode = 200
         res.end('File deleted.')
     })
@@ -58,9 +58,9 @@ function saveFile(path, req, res, fileSizeLimit) {
             if (err.code === 'EEXIST') {
                 res.statusCode = 409
                 res.end('File already exists.')
-                console.log('<FILE_OPEN_ERROR>\t', path, 'already exists')
+                log.warn('File open error (EEXIST): %s', path)
             } else {
-                console.log(err)
+                log.error('File error: %s', err.message)
                 if (res.headersSent) {
                     res.writeHead(500, { Connection: 'close' })
                     res.write('Server error.')
@@ -75,12 +75,12 @@ function saveFile(path, req, res, fileSizeLimit) {
             // File is saved = transmission is over
             res.statusCode = 200
             res.end('File uploaded.')
-            console.log('<FILE_SAVE_SUCCESS>\t', path, `(${uploadedBytes / 10e6} MB)`)
+            log.info('File saved: %s (%s)', path, `(${uploadedBytes / 10e6} MB)`)
         })
 
     req
         .on('error', err => {
-            console.log(err)
+            log.error('Connection error: %s', err.message)
         })
         .on('end', () => {
             // All data consumed
@@ -88,7 +88,7 @@ function saveFile(path, req, res, fileSizeLimit) {
         })
         .on('close', () => {
             // disconnect
-            console.log('<DISCONNECT>')
+            log.warn('Connection closed (disconnect).')
         })
         // we can use many 'data' handlers like `pipe`
         .on('data', chunk => {
@@ -110,9 +110,9 @@ function saveFile(path, req, res, fileSizeLimit) {
                 // Delete file
                 fs.unlink(path, err => {
                     if (err) {
-                        console.error(err)
+                        log.error('File delete error: %s', err.message)
                     } else {
-                        console.log('<FILE_DELETE_SUCCESS>\t', path)
+                        log.info('File deleted: %s', path)
                     }
                 })
             }

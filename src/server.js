@@ -1,13 +1,4 @@
-/* Basic file server.
- * All files are in '/files' folder.
- * 
- * Supported operations:
- * GET /
- * GET /file.ext
- * POST /file.ext
- * DELETE /file.ext
-*/
-
+/* Basic file server */
 const { Server } = require('http')
 const url = require('url')
 const fs = require('fs')
@@ -15,6 +6,7 @@ const mime = require('mime')
 const config = require('config')
 const { saveFile, sendFile, deleteFile } = require('./handlers')
 const { isValidFilePath } = require('./helpers')
+const log = require('./logger')
 
 const PORT = config.get('port')
 const FILES_DIR = config.get('filesDir')
@@ -28,12 +20,15 @@ const server = new Server((req, res) => {
         // invalid path
         res.statusCode = 400
         res.end('Bad request.')
+
+        log.warn('Bad request: %s %s', req.method, reqPathname)
+
         return
     }
 
     const filePath = FILES_DIR + reqPathname
 
-    console.log('<CLIENT_REQUEST>\t', req.method, reqPathname)
+    log.info("%s %s", req.method, reqPathname)
 
     switch (req.method) {
         case 'GET':
