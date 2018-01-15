@@ -2,17 +2,21 @@ const assert = require('assert')
 const fs = require('fs')
 const config = require('config')
 const request = require('request')
+const log = require('../src/logger')
 const server = require('../src/server')
 
 const PORT = config.get('port')
 const PUBLIC_DIR = config.get('publicDir')
-console.log('---', PORT)
 
-describe('server tests', () => {
+describe('server integration tests', () => {
     let app
 
     before(done => {
         app = server.listen(PORT, done)
+    })
+
+    beforeEach(function() {
+        log.info('--- %s', this.currentTest.title)
     })
 
     after(done => {

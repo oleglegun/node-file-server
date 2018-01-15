@@ -24,15 +24,23 @@ const console = new winston.transports.Console({
     level: 'warn',
 })
 
-const logger = winston.createLogger({
+const logFormat = combine(
+    timestamp(),
+    splat(),
+    printf(info => `${info.timestamp} [${info.level}] ${info.message}`)
+)
+
+let logger = winston.createLogger({
     level: 'info',
-    format: combine(
-        timestamp(),
-        splat(),
-        printf(info => `${info.timestamp} [${info.level}] ${info.message}`)
-    ),
+    format: logFormat,
     transports: [errorsFile, combinedFile],
     exceptionHandlers: [exceptionsFile],
+})
+
+const testLogger = winston.createLogger({
+    format: combine(splat(), printf(info => `[${info.level}] ${info.message}`)),
+    transports: [testFile],
+    exceptionHandlers: [testFile],
 })
 
 if (process.env.NODE_ENV !== 'production') {
@@ -40,7 +48,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 if (process.env.NODE_ENV === 'test') {
-    logger.clear().add(testFile)
+    logger = testLogger
 }
 
 module.exports = logger

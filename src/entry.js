@@ -4,4 +4,4 @@ const log = require('./logger')
 
 const PORT = config.get('port')
 
-server.listen(PORT, () => log.info('Server started. Listening on port %d.', PORT))
+server.listen(PORT, () => log.warn('Server started. Listening on port %d.', PORT))

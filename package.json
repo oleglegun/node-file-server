@@ -1,12 +1,13 @@
 {
     "name": "file-server",
     "version": "1.0.0",
-    "description": "",
+    "description": "Basic file server",
     "main": "src/server.js",
     "scripts": {
-        "test": "NODE_ENV=test mocha -w",
-        "start": "yarn run clear-logs && nodemon src/entry.js",
-        "clear-logs": "rm logs/*"
+        "start": "yarn run logs:clear-all && nodemon src/entry.js",
+        "test": "npm run logs:clear-test && NODE_ENV=test mocha -w",
+        "logs:clear-all": "rm logs/*",
+        "logs:clear-test": "rm logs/*"
     },
     "author": "",
     "license": "ISC",
