@@ -28,7 +28,7 @@ const server = new Server((req, res) => {
 
     const filePath = FILES_DIR + reqPathname
 
-    log.info("%s %s", req.method, reqPathname)
+    log.info('%s %s', req.method, reqPathname)
 
     switch (req.method) {
         case 'GET':

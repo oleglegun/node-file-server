@@ -120,6 +120,4 @@ function saveFile(path, req, res, fileSizeLimit) {
         .pipe(file)
 }
 
-exports.sendFile = sendFile
-exports.deleteFile = deleteFile
-exports.saveFile = saveFile
+module.exports = {sendFile, deleteFile, saveFile}

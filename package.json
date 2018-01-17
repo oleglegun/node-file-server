@@ -5,14 +5,18 @@
     "main": "src/server.js",
     "scripts": {
         "start": "yarn run logs:clear-all && nodemon src/entry.js",
-        "test": "npm run logs:clear-test && NODE_ENV=test mocha -w",
+        "test": "yarn run logs:clear-test && yarn run mocha:all-watch",
         "logs:clear-all": "rm logs/*",
-        "logs:clear-test": "rm logs/*"
+        "logs:clear-test": "echo '' > logs/test.log",
+        "mocha:integration": "NODE_ENV=test mocha test/integration/**/*.js",
+        "mocha:unit": "NODE_ENV=test mocha test/unit/**/*.js",
+        "mocha:all-watch": "NODE_ENV=test mocha -w test/**/**/*.js"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
         "config": "^1.29.2",
+        "fs-extra": "^5.0.0",
         "is-invalid-path": "^0.1.0",
         "mime": "^2.2.0",
         "node-fetch": "^1.7.3",

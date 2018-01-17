@@ -1,0 +1,33 @@
+### Get index page
+
+GET {{host}}/
+
+
+### Get file
+GET {{host}}/file.txt
+
+
+### Upload file
+
+POST {{host}}/file.txt
+Content-Type: text/plain
+
+< {{fixtures}}/file.txt
+
+
+### Upload small file
+POST {{host}}/smallFile.txt
+Content-Type: text/plain
+
+< {{fixtures}}/smallFile.txt
+
+
+### Upload big file (> 1mb)
+POST {{host}}/bigFile.txt
+Content-Type: text/plain
+
+< {{fixtures}}/bigFile.txt
+
+
+### Delete file
+DELETE {{host}}/file.txt
