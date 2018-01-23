@@ -1,7 +1,14 @@
+//@ts-check
 const assert = require('assert')
 const fs = require('fs-extra')
 const config = require('config')
 const request = require('request')
+const Readable = require('stream').Readable
+const rp = require('request-promise').defaults({
+    encoding: null, // get buffer
+    simple: false, // reject promise if response.statusCode != 2..
+    resolveWithFullResponse: true,
+})
 const fetch = require('node-fetch')
 const log = require('../../src/logger')
 const server = require('../../src/server')
@@ -24,13 +31,15 @@ describe('INTEGRATION TESTS', () => {
 
     beforeEach(function() {
         log.info('--- %s', this.currentTest.title)
-        log.info('Empty dir')
-        fs.emptyDirSync(FILES_DIR)
     })
 
     after(done => {
         app.close(done)
     })
+
+    /*
+     *  GET
+     */
 
     context('GET /', () => {
         it('should return index.html from /public', done => {
@@ -51,6 +60,7 @@ describe('INTEGRATION TESTS', () => {
     describe('GET file', () => {
         context('file exists', () => {
             beforeEach('Put small.txt file to /files', () => {
+                fs.emptyDirSync(FILES_DIR)
                 fs.copySync(`${FIXTURES_DIR}/small.txt`, `${FILES_DIR}/small.txt`)
                 log.info('copy file small.txt')
             })
@@ -117,22 +127,111 @@ describe('INTEGRATION TESTS', () => {
         })
     })
 
+    /*
+     *  POST
+     */
+
     describe('POST file ', () => {
-        it('should successfully upload small file', done => {
-            // request.post(HOST,)
-            done()
+        beforeEach(function() {
+            fs.emptyDirSync(FILES_DIR)
         })
 
-        it('should return error 413 (Payload Too Large) on try to upload big file', done => {
-            done()
+        context('if file exists', () => {
+            beforeEach(function() {
+                fs.copySync(`${FIXTURES_DIR}/small.txt`, `${FILES_DIR}/small.txt`)
+            })
+
+            it('should return error 409 (File already exists)', () => {
+                return rp({
+                    method: 'POST',
+                    uri: `${HOST}/small.txt`,
+                    body: fs.createReadStream(`${FIXTURES_DIR}/small.txt`),
+                    resolveWithFullResponse: true,
+                })
+                    .then(response => {
+                        assert.equal(response.statusCode, 409, 'Expected error 409')
+                    })
+                    .catch(err => {
+                        assert.equal(err.statusCode, 409)
+                    })
+            })
+
+            it('should not rewrite the existing file', () => {
+                const mtime = fs.statSync(`${FILES_DIR}/small.txt`).mtime
+
+                return rp({
+                    method: 'POST',
+                    uri: `${HOST}/small.txt`,
+                    body: fs.createReadStream(`${FIXTURES_DIR}/small.txt`),
+                    resolveWithFullResponse: true,
+                }).then(
+                    response => {
+                        assert.equal(response.statusCode, 409, 'Expected error 409')
+                    },
+                    error => {
+                        const newMtime = fs.statSync(`${FIXTURES_DIR}/small.txt`).mtime
+                        assert.deepEqual(mtime, newMtime)
+                    }
+                )
+            })
         })
 
-        it('should', () => {
-            // return new Promise(resolve => {
-            //     setTimeout(() => resolve(), 1000)
-            // })
+        context('if file not exist', () => {
+            it('should successfully upload small file', done => {
+                const req = request.post(HOST + `/small.txt`, error => {
+                    if (error) return done(error)
+
+                    assert.deepEqual(
+                        fs.readFileSync(FILES_DIR + `/small.txt`),
+                        fs.readFileSync(FIXTURES_DIR + '/small.txt')
+                    )
+
+                    done()
+                })
+
+                fs.createReadStream(FIXTURES_DIR + '/small.txt').pipe(req)
+            })
+
+            it('should return error 413 (Payload Too Large) on try to upload big file', async () => {
+                assert.equal(fs.existsSync(FILES_DIR + '/big.txt'), false)
+                const stream = fs.createReadStream(FIXTURES_DIR + '/big.txt')
+
+                const req = rp.post(HOST + '/big.txt')
+
+                stream.pipe(req)
+
+                let response
+
+                try {
+                    response = await req
+                } catch (error) {
+                    if (error.code === 'ECONNRESET' || error.code === 'EPIPE') {
+                        throw error
+                    }
+                }
+
+                assert.equal(response.statusCode, 413)
+                assert.equal(fs.existsSync(FILES_DIR + '/big.txt'), false)
+            })
+
+            it('should successfully upload zero size file', async () => {
+                const req = rp.post(HOST + '/small.txt')
+
+                const stream = new Readable()
+                stream.pipe(req)
+                stream.push(null)
+
+                const response = await req
+
+                assert.equal(response.statusCode, 200)
+                assert.equal(fs.statSync(FILES_DIR + '/small.txt').size, 0)
+            })
         })
     })
+
+    /*
+     *  DELETE
+     */
 
     describe('DELETE file', () => {
         it('should successfully delete existent file in /files', () => {})
@@ -149,3 +248,7 @@ describe('INTEGRATION TESTS', () => {
         })
     })
 })
+
+// process.on('uncaughtException', error => {
+//     console.log('---', error)
+// })

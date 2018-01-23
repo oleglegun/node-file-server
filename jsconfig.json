@@ -1,0 +1,5 @@
+{
+    "typeAcquisition": {
+        "include": ["request-promise", "node-fetch", "fs-extra"]
+    }
+}

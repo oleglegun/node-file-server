@@ -89,6 +89,14 @@ function saveFile(path, req, res, fileSizeLimit) {
         .on('close', () => {
             // disconnect
             log.warn('Connection closed (disconnect).')
+            file.destroy()
+            fs.unlink(path, err => {
+                if (err) {
+                    log.error('File delete error: %s', err.message)
+                } else {
+                    log.info('File deleted: %s', path)
+                }
+            })
         })
         // we can use many 'data' handlers like `pipe`
         .on('data', chunk => {
@@ -120,4 +128,4 @@ function saveFile(path, req, res, fileSizeLimit) {
         .pipe(file)
 }
 
-module.exports = {sendFile, deleteFile, saveFile}
+module.exports = { sendFile, deleteFile, saveFile }
